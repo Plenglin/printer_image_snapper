@@ -17,7 +17,7 @@ def main():
     logger.info("Fetching snapshot", url=SNAPSHOT_URL)
     snapshot = requests.get(SNAPSHOT_URL).content
 
-    logger.info("PATCHing server image", bytes=len(snapshot))
+    logger.info("PATCHing server image", url=PRINTER_ENDPOINT, username=USER, bytes=len(snapshot))
     response = requests.patch(PRINTER_ENDPOINT, auth=(USER, PASSWORD),
                               files={'image': ('snapshot.jpg', snapshot, 'image/jpg')})
 
