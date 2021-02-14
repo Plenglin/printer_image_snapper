@@ -61,9 +61,10 @@ def main():
         logger.error("Could not retrieve data! Exiting.")
         sys.exit(1)
 
-    logger.info("PATCHing server image", url=PRINTER_ENDPOINT, username=USER, image_bytes=len(snapshot), printer_status=printer_status)
+    logger.info("PATCHing server image", url=PRINTER_ENDPOINT, username=USER, image_bytes=len(snapshot),
+                printer_status=printer_status)
     response = requests.patch(PRINTER_ENDPOINT, auth=(USER, PASSWORD),
-                              files={'status': printer_status,
+                              files={'status': "N/A" if printer_status is None else printer_status,
                                      'image': None if snapshot is None else ('snapshot.jpg', snapshot, 'image/jpg')})
 
     if response.status_code != 200:
