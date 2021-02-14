@@ -64,7 +64,7 @@ def main():
     logger_ = logger.bind(url=PRINTER_ENDPOINT, username=USER)
     logger_.debug("PATCH status", printer_status=printer_status)
     response = requests.patch(PRINTER_ENDPOINT, auth=(USER, PASSWORD),
-                              files={'status': "N/A" if printer_status is None else printer_status})
+                              data={'status': "N/A" if printer_status is None else printer_status})
     logger_.debug("Received response", status_code=response.status_code, response_content=response.json())
     if response.status_code != 200:
         logger_.error("Failed to upload status", printer_status=printer_status, status_code=response.status_code,
