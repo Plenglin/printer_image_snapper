@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 
 import requests
 import structlog
@@ -56,15 +57,20 @@ def main():
         logger.error("Error fetching snapshot", error=e)
         snapshot = None
 
+    if snapshot is None and printer_status is None:
+        logger.error("Could not retrieve data! Exiting.")
+        sys.exit(1)
+
     logger.info("PATCHing server image", url=PRINTER_ENDPOINT, username=USER, image_bytes=len(snapshot), printer_status=printer_status)
     response = requests.patch(PRINTER_ENDPOINT, auth=(USER, PASSWORD),
                               files={'status': printer_status,
                                      'image': None if snapshot is None else ('snapshot.jpg', snapshot, 'image/jpg')})
 
-    if response.status_code == 200:
-        logger.info("Successfully uploaded snapshot", content=response.json())
-    else:
+    if response.status_code != 200:
         logger.error("Failed to upload snapshot", status_code=response.status_code, content=response.json())
+        sys.exit(2)
+
+    logger.info("Successfully uploaded snapshot", content=response.json())
 
 
 if __name__ == '__main__':
