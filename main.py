@@ -61,17 +61,30 @@ def main():
         logger.error("Could not retrieve data! Exiting.")
         sys.exit(1)
 
-    logger.info("PATCHing server image", url=PRINTER_ENDPOINT, username=USER, image_bytes=len(snapshot),
-                printer_status=printer_status)
+    logger_ = logger.bind(url=PRINTER_ENDPOINT, username=USER)
+    logger_.debug("PATCH status", printer_status=printer_status)
     response = requests.patch(PRINTER_ENDPOINT, auth=(USER, PASSWORD),
-                              files={'status': "N/A" if printer_status is None else printer_status,
-                                     'image': None if snapshot is None else ('snapshot.jpg', snapshot, 'image/jpg')})
-
+                              files={'status': "N/A" if printer_status is None else printer_status})
+    logger_.debug("Received response", status_code=response.status_code, response_content=response.json())
     if response.status_code != 200:
-        logger.error("Failed to upload snapshot", status_code=response.status_code, content=response.json())
+        logger_.error("Failed to upload status", printer_status=printer_status, status_code=response.status_code,
+                      response_content=response.json())
         sys.exit(2)
 
-    logger.info("Successfully uploaded snapshot", content=response.json())
+    logger_.debug("PATCH image", image_bytes=len(snapshot))
+    response = requests.patch(
+        PRINTER_ENDPOINT, auth=(USER, PASSWORD),
+        files={
+            'image': None if snapshot is None else ('snapshot.jpg', snapshot, 'image/jpg')
+        }
+    )
+    logger_.debug("Received response", status_code=response.status_code, response_content=response.json())
+
+    if response.status_code != 200:
+        logger_.error("Failed to upload image", status_code=response.status_code, response_content=response.json())
+        sys.exit(3)
+
+    logger.info("Successfully uploaded snapshot", response_content=response.json())
 
 
 if __name__ == '__main__':
